@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>NovaCore Admin</title>
+  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@600;700&family=Inter:wght@400;500&family=Orbitron:wght@700&display=swap" rel="stylesheet">
+  <style>
+    :root{--bg:#080b10;--bg2:#0d1117;--bg3:#111722;--surface:#141b26;--border:#1e2a3a;--cyan:#00d4ff;--gold:#f0a500;--red:#ff3c3c;--green:#00e676;--text:#e8edf5;--muted:#6b7a8f}
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-height:100vh}
+
+    /* LOGIN SCREEN */
+    .login-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
+    .login-box{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:44px;width:100%;max-width:400px}
+    .login-logo{text-align:center;margin-bottom:32px}
+    .login-logo .badge{display:inline-block;background:linear-gradient(135deg,var(--cyan),#0066ff);border-radius:8px;padding:12px 20px;font-family:'Orbitron',sans-serif;font-size:16px;font-weight:700;color:#fff;margin-bottom:12px}
+    .login-logo p{font-family:'Rajdhani',sans-serif;font-size:13px;letter-spacing:2px;text-transform:uppercase;color:var(--muted)}
+    .login-title{font-family:'Orbitron',sans-serif;font-size:20px;font-weight:700;margin-bottom:8px;text-align:center}
+    .login-sub{font-size:13px;color:var(--muted);text-align:center;margin-bottom:28px}
+    .form-group{margin-bottom:18px}
+    .form-group label{display:block;font-family:'Rajdhani',sans-serif;font-size:11px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:7px}
+    .form-group input{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:12px 14px;color:var(--text);font-family:'Inter',sans-serif;font-size:14px;outline:none;transition:border-color .2s}
+    .form-group input:focus{border-color:var(--cyan)}
+    .btn-login{width:100%;padding:13px;background:var(--cyan);color:#000;border:none;border-radius:4px;font-family:'Rajdhani',sans-serif;font-size:14px;font-weight:700;letter-spacing:2px;text-transform:uppercase;cursor:pointer;transition:all .2s;margin-top:6px}
+    .btn-login:hover{background:#fff}
+    .login-error{color:var(--red);font-size:12px;margin-top:8px;text-align:center;display:none}
+
+    /* ADMIN LAYOUT */
+    .admin-shell{display:none;min-height:100vh}
+    .admin-shell.visible{display:flex}
+
+    /* SIDEBAR */
+    .sidebar{width:230px;background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;position:fixed;top:0;bottom:0;left:0;z-index:100}
+    .sidebar-brand{padding:20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px}
+    .brand-icon{width:34px;height:34px;background:linear-gradient(135deg,var(--cyan),#0066ff);border-radius:6px;display:flex;align-items:center;justify-content:center;font-family:'Orbitron',sans-serif;font-size:12px;font-weight:700;color:#fff;flex-shrink:0}
+    .brand-name{font-family:'Rajdhani',sans-serif;font-size:14px;font-weight:700;line-height:1.2}
+    .brand-name span{color:var(--cyan)}
+    .sidebar-admin{padding:8px 16px;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--red);font-weight:600;border-bottom:1px solid var(--border)}
+    .nav-item{display:flex;align-items:center;gap:12px;padding:13px 20px;font-family:'Rajdhani',sans-serif;font-size:14px;font-weight:600;letter-spacing:.5px;color:var(--muted);cursor:pointer;transition:all .2s;border-left:3px solid transparent;text-decoration:none}
+    .nav-item:hover{color:var(--text);background:rgba(255,255,255,.03)}
+    .nav-item.active{color:var(--cyan);border-left-color:var(--cyan);background:rgba(0,212,255,.05)}
+    .nav-item .icon{font-size:16px;flex-shrink:0}
+    .nav-badge{margin-left:auto;background:var(--red);color:#fff;font-size:10px;font-weight:700;padding:2px 7px;border-radius:50px}
+    .sidebar-bottom{margin-top:auto;padding:16px;border-top:1px solid var(--border)}
+    .user-info{font-size:12px;color:var(--muted);margin-bottom:10px}
+    .user-info strong{display:block;color:var(--text);font-size:13px}
+    .btn-logout{width:100%;padding:9px;background:transparent;border:1px solid var(--border);border-radius:4px;color:var(--muted);font-family:'Rajdhani',sans-serif;font-size:12px;font-weight:600;letter-spacing:1px;text-transform:uppercase;cursor:pointer;transition:all .2s}
+    .btn-logout:hover{border-color:var(--red);color:var(--red)}
+
+    /* MAIN */
+    .main{margin-left:230px;flex:1;min-height:100vh}
+    .topbar{background:var(--bg2);border-bottom:1px solid var(--border);padding:16px 28px;display:flex;align-items:center;justify-content:space-between}
+    .topbar h1{font-family:'Orbitron',sans-serif;font-size:18px;font-weight:700}
+    .topbar-sub{font-size:12px;color:var(--muted);margin-top:2px}
+    .topbar-right{display:flex;gap:10px;align-items:center}
+    .back-btn{padding:8px 16px;border:1px solid var(--border);border-radius:4px;font-family:'Rajdhani',sans-serif;font-size:12px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--muted);cursor:pointer;background:transparent;text-decoration:none;transition:all .2s}
+    .back-btn:hover{border-color:var(--cyan);color:var(--cyan)}
+
+    .content{padding:28px}
+
+    /* PAGES */
+    .page{display:none}
+    .page.active{display:block}
+
+    /* STATS CARDS */
+    .stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;margin-bottom:32px}
+    .stat-card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:22px;position:relative;overflow:hidden}
+    .stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px}
+    .stat-card.pending::before{background:var(--gold)}
+    .stat-card.total::before{background:var(--cyan)}
+    .stat-card.approved::before{background:var(--green)}
+    .stat-card.msgs::before{background:#a855f7}
+    .stat-label{font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+    .stat-val{font-family:'Orbitron',sans-serif;font-size:32px;font-weight:700}
+    .stat-card.pending .stat-val{color:var(--gold)}
+    .stat-card.total .stat-val{color:var(--cyan)}
+    .stat-card.approved .stat-val{color:var(--green)}
+    .stat-card.msgs .stat-val{color:#a855f7}
+
+    /* TABLE */
+    .table-box{background:var(--surface);border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:24px}
+    .table-header{padding:18px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px}
+    .table-header h3{font-family:'Rajdhani',sans-serif;font-size:16px;font-weight:700}
+    .table-wrap{overflow-x:auto}
+    table{width:100%;border-collapse:collapse}
+    th{font-family:'Rajdhani',sans-serif;font-size:11px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);padding:12px 18px;text-align:left;border-bottom:1px solid var(--border);white-space:nowrap}
+    td{padding:14px 18px;font-size:13px;border-bottom:1px solid rgba(30,42,58,.5);vertical-align:middle}
+    tr:last-child td{border-bottom:none}
+    tr:hover td{background:rgba(255,255,255,.02)}
+
+    .badge{display:inline-block;padding:3px 10px;border-radius:50px;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase}
+    .badge.pending{background:rgba(240,165,0,.1);color:var(--gold);border:1px solid rgba(240,165,0,.2)}
+    .badge.approved{background:rgba(0,230,118,.1);color:var(--green);border:1px solid rgba(0,230,118,.2)}
+    .badge.rejected{background:rgba(255,60,60,.1);color:var(--red);border:1px solid rgba(255,60,60,.2)}
+
+    .action-btn{padding:5px 12px;border-radius:4px;font-family:'Rajdhani',sans-serif;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;cursor:pointer;transition:all .2s;border:1px solid;margin-right:4px}
+    .action-btn.approve{border-color:var(--green);color:var(--green);background:transparent}
+    .action-btn.approve:hover{background:var(--green);color:#000}
+    .action-btn.reject{border-color:var(--red);color:var(--red);background:transparent}
+    .action-btn.reject:hover{background:var(--red);color:#fff}
+    .action-btn.delete{border-color:var(--border);color:var(--muted);background:transparent}
+    .action-btn.delete:hover{border-color:var(--red);color:var(--red)}
+
+    /* ADD ACHIEVEMENT FORM */
+    .add-form{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:28px;margin-bottom:24px}
+    .add-form h3{font-family:'Rajdhani',sans-serif;font-size:16px;font-weight:700;margin-bottom:20px;display:flex;align-items:center;gap:8px}
+    .form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+    .form-group select{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:11px 14px;color:var(--text);font-family:'Inter',sans-serif;font-size:13px;outline:none;transition:border-color .2s}
+    .form-group select:focus{border-color:var(--cyan)}
+    .btn-add{padding:11px 24px;background:var(--cyan);color:#000;border:none;border-radius:4px;font-family:'Rajdhani',sans-serif;font-size:13px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;cursor:pointer;transition:all .2s}
+    .btn-add:hover{background:#fff}
+
+    .empty-state{padding:48px;text-align:center;color:var(--muted);font-size:14px}
+
+    /* TOAST */
+    .toast{position:fixed;bottom:20px;right:20px;z-index:5000;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:12px 18px;font-size:13px;transform:translateY(80px);opacity:0;transition:all .3s;max-width:300px}
+    .toast.show{transform:translateY(0);opacity:1}
+    .toast.s{border-color:var(--green)}
+    .toast.e{border-color:var(--red)}
+
+    /* LOADING */
+    .loading{text-align:center;padding:40px;color:var(--muted);font-size:14px}
+
+    @media(max-width:768px){
+      .sidebar{transform:translateX(-100%);transition:transform .3s}
+      .sidebar.open{transform:translateX(0)}
+      .main{margin-left:0}
+      .form-row{grid-template-columns:1fr}
+      .mob-toggle{display:flex!important}
+    }
+    .mob-toggle{display:none;background:none;border:none;color:var(--text);font-size:22px;cursor:pointer;padding:4px}
+  </style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div class="login-screen" id="loginScreen">
+  <div class="login-box">
+    <div class="login-logo">
+      <div class="badge">NC ADMIN</div>
+      <p>NovaCore eSports Dashboard</p>
+    </div>
+    <h2 class="login-title">Admin Login</h2>
+    <p class="login-sub">Authorized personnel only</p>
+    <div class="form-group">
+      <label>Email</label>
+      <input type="email" id="l-email" placeholder="admin@novacore.gg" />
+    </div>
+    <div class="form-group">
+      <label>Password</label>
+      <input type="password" id="l-pass" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()" />
+    </div>
+    <button class="btn-login" onclick="doLogin()">Access Dashboard →</button>
+    <div class="login-error" id="login-err"></div>
+  </div>
+</div>
+
+<!-- ADMIN SHELL -->
+<div class="admin-shell" id="adminShell">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-icon">NC</div>
+      <div class="brand-name">NOVA<span>CORE</span><br><small style="font-size:10px;letter-spacing:1px;color:var(--muted)">ESPORTS</small></div>
+    </div>
+    <div class="sidebar-admin">⚡ Admin Panel</div>
+    <nav style="padding:8px 0">
+      <div class="nav-item active" onclick="goPage('dashboard')" id="nav-dashboard">
+        <span class="icon">📊</span> Dashboard
+      </div>
+      <div class="nav-item" onclick="goPage('applications')" id="nav-applications">
+        <span class="icon">📝</span> Applications
+        <span class="nav-badge" id="pending-badge">0</span>
+      </div>
+      <div class="nav-item" onclick="goPage('achievements')" id="nav-achievements">
+        <span class="icon">🏆</span> Achievements
+      </div>
+      <div class="nav-item" onclick="goPage('contacts')" id="nav-contacts">
+        <span class="icon">💬</span> Messages
+      </div>
+      <a class="nav-item" href="index.html" target="_blank">
+        <span class="icon">🌐</span> View Website
+      </a>
+    </nav>
+    <div class="sidebar-bottom">
+      <div class="user-info">
+        <strong id="admin-name">Admin</strong>
+        Logged in as Admin
+      </div>
+      <button class="btn-logout" onclick="doLogout()">Logout</button>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+    <div class="topbar">
+      <div>
+        <h1 id="page-title">Dashboard</h1>
+        <div class="topbar-sub" id="page-sub">Overview of NovaCore activity</div>
+      </div>
+      <div class="topbar-right">
+        <button class="mob-toggle" onclick="document.getElementById('sidebar').classList.toggle('open')">☰</button>
+        <a class="back-btn" href="index.html">← Website</a>
+      </div>
+    </div>
+
+    <div class="content">
+
+      <!-- DASHBOARD PAGE -->
+      <div class="page active" id="page-dashboard">
+        <div class="stats-grid">
+          <div class="stat-card pending"><div class="stat-label">Pending Apps</div><div class="stat-val" id="s-pending">—</div></div>
+          <div class="stat-card total"><div class="stat-label">Total Apps</div><div class="stat-val" id="s-total">—</div></div>
+          <div class="stat-card approved"><div class="stat-label">Approved</div><div class="stat-val" id="s-approved">—</div></div>
+          <div class="stat-card msgs"><div class="stat-label">Messages</div><div class="stat-val" id="s-msgs">—</div></div>
+        </div>
+        <div class="table-box">
+          <div class="table-header"><h3>Recent Applications</h3><button class="back-btn" onclick="goPage('applications')">View All →</button></div>
+          <div id="recent-apps"><div class="loading">Loading...</div></div>
+        </div>
+      </div>
+
+      <!-- APPLICATIONS PAGE -->
+      <div class="page" id="page-applications">
+        <div class="table-box">
+          <div class="table-header">
+            <h3>All Applications</h3>
+            <div style="display:flex;gap:8px">
+              <select id="filter-status" onchange="loadApplications()" style="background:var(--bg3);border:1px solid var(--border);color:var(--text);padding:7px 12px;border-radius:4px;font-size:12px;outline:none">
+                <option value="">All Status</option>
+                <option value="pending">Pending</option>
+                <option value="approved">Approved</option>
+                <option value="rejected">Rejected</option>
+              </select>
+            </div>
+          </div>
+          <div id="apps-table"><div class="loading">Loading...</div></div>
+        </div>
+      </div>
+
+      <!-- ACHIEVEMENTS PAGE -->
+      <div class="page" id="page-achievements">
+        <div class="add-form">
+          <h3>➕ Add Achievement</h3>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Tournament Name</label>
+              <input type="text" id="a-tournament" placeholder="e.g. BMPS 2026 Finals" />
+            </div>
+            <div class="form-group">
+              <label>Additional Info</label>
+              <input type="text" id="a-meta" placeholder="e.g. Team Apex Gaming" />
+            </div>
+          </div>
+          <div class="form-row" style="margin-top:14px">
+            <div class="form-group">
+              <label>Rank Display</label>
+              <input type="text" id="a-rank" placeholder='e.g. #1 or 🏆' />
+            </div>
+            <div class="form-group">
+              <label>Rank Style</label>
+              <select id="a-rankClass">
+                <option value="gold">Gold (#1)</option>
+                <option value="silver">Silver (#2)</option>
+                <option value="bronze">Bronze (#3-4)</option>
+                <option value="cyan">Special / Champion</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row" style="margin-top:14px">
+            <div class="form-group">
+              <label>Placement Text</label>
+              <input type="text" id="a-placement" placeholder="e.g. 1st Place" />
+            </div>
+            <div class="form-group">
+              <label>Placement Style</label>
+              <select id="a-placementClass">
+                <option value="top">Highlight (Gold)</option>
+                <option value="">Normal</option>
+              </select>
+            </div>
+          </div>
+          <button class="btn-add" style="margin-top:16px" onclick="addAchievement()">Add Achievement →</button>
+        </div>
+        <div class="table-box">
+          <div class="table-header"><h3>All Achievements</h3></div>
+          <div id="ach-table"><div class="loading">Loading...</div></div>
+        </div>
+      </div>
+
+      <!-- CONTACTS PAGE -->
+      <div class="page" id="page-contacts">
+        <div class="table-box">
+          <div class="table-header"><h3>Contact Messages</h3></div>
+          <div id="contacts-table"><div class="loading">Loading...</div></div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- FIREBASE -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
+  import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js";
+  import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, query, orderBy, serverTimestamp, getCountFromServer } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyAQGEJgNXTtMP6toiCY9ta61mVtvgOza_I",
+    authDomain: "novacore-esports.firebaseapp.com",
+    projectId: "novacore-esports",
+    storageBucket: "novacore-esports.firebasestorage.app",
+    messagingSenderId: "741037140652",
+    appId: "1:741037140652:web:4a59672d67fdbc33efcd09"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+
+  // ── AUTH ──────────────────────────────────────
+  onAuthStateChanged(auth, user => {
+    if (user) {
+      document.getElementById("loginScreen").style.display = "none";
+      document.getElementById("adminShell").className = "admin-shell visible";
+      document.getElementById("admin-name").textContent = user.displayName || user.email.split("@")[0];
+      loadDashboard();
+    } else {
+      document.getElementById("loginScreen").style.display = "flex";
+      document.getElementById("adminShell").className = "admin-shell";
+    }
+  });
+
+  window.doLogin = async () => {
+    const email = document.getElementById("l-email").value.trim();
+    const pass  = document.getElementById("l-pass").value;
+    const errEl = document.getElementById("login-err");
+    errEl.style.display = "none";
+    if (!email || !pass) { errEl.textContent="Fill all fields"; errEl.style.display="block"; return; }
+    try {
+      await signInWithEmailAndPassword(auth, email, pass);
+    } catch(e) {
+      const msgs={"auth/user-not-found":"No account found.","auth/wrong-password":"Wrong password.","auth/invalid-credential":"Invalid email or password."};
+      errEl.textContent = msgs[e.code]||e.message;
+      errEl.style.display = "block";
+    }
+  };
+
+  window.doLogout = async () => { await signOut(auth); };
+
+  // ── NAVIGATION ────────────────────────────────
+  const titles = {
+    dashboard:    ["Dashboard",    "Overview of NovaCore activity"],
+    applications: ["Applications", "Manage player applications"],
+    achievements: ["Achievements", "Add and manage tournament results"],
+    contacts:     ["Messages",     "View contact form submissions"],
+  };
+
+  window.goPage = (page) => {
+    document.querySelectorA
