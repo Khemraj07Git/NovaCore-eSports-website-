@@ -1,1 +1,1 @@
-# NovaCore-eSports-website-
+# NovaCore-eSports-website
